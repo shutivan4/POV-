@@ -1,25 +1,40 @@
 FROM node:18-alpine
 
-# Установка зависимостей: ffmpeg, python3, pip, venv
-RUN apk add --no-cache ffmpeg curl python3 py3-pip py3-virtualenv
+# Установка системных зависимостей
+RUN apk add --no-cache \
+    ffmpeg \
+    curl \
+    python3 \
+    py3-pip \
+    py3-virtualenv \
+    bash \
+    build-base \
+    libffi-dev \
+    openssl-dev \
+    py3-wheel
 
-# Создание виртуального окружения Python
+# Создание и активация виртуального окружения Python
 RUN python3 -m venv /opt/venv
-
-# Установка edge-tts в виртуальное окружение
-RUN /opt/venv/bin/pip install --no-cache-dir edge-tts
-
-# Добавляем venv в PATH, чтобы edge-tts был доступен как команда
 ENV PATH="/opt/venv/bin:$PATH"
+
+# Установка edge-tts
+RUN pip install --no-cache-dir edge-tts
 
 # Установка n8n
 RUN npm install -g n8n
 
-# Создаем директорию для конфигов n8n
+# Создание директории для конфигов n8n
 RUN mkdir -p /home/node/.n8n && chown -R node:node /home/node/.n8n
 
-# Переход на пользователя node
+# Используем непривилегированного пользователя
 USER node
+
+# Рабочая директория
+WORKDIR /home/node
+
+# Устанавливаем переменные среды для работы с Cloud API
+ENV AZURE_REGION=<your-azure-region>  # Пример: eastus
+ENV AZURE_KEY=<your-azure-key>  # Пример: cbcabcdef12345...
 
 # Открываем порт
 EXPOSE 5678
