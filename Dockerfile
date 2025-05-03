@@ -1,11 +1,10 @@
-# Используем официальный образ n8n
-FROM docker.n8n.io/n8nio/n8n:latest
+FROM node:16-alpine
 
-# Переходим на пользователя root для установки зависимостей
-USER root
-
-# Устанавливаем ffmpeg, curl, Python и pip
+# Устанавливаем ffmpeg, curl и Python
 RUN apk add --no-cache ffmpeg curl python3 py3-pip
+
+# Устанавливаем n8n
+RUN npm install -g n8n
 
 # Создаем виртуальное окружение для Python
 RUN python3 -m venv /home/node/.n8n/venv
@@ -16,10 +15,10 @@ RUN /home/node/.n8n/venv/bin/pip install edge-tts
 # Устанавливаем правильные права для .n8n
 RUN chown -R node:node /home/node/.n8n
 
-# Указываем путь к n8n, если он не доступен
+# Указываем переменную окружения для путей
 ENV PATH="/home/node/.n8n/node_modules/.bin:$PATH"
 
-# Переходим обратно на пользователя node
+# Возвращаемся к пользователю node
 USER node
 
 # Указываем команду для запуска n8n
